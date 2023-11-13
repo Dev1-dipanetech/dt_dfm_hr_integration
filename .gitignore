@@ -1,0 +1,7 @@
+.DS_Store
+*.pyc
+*.egg-info
+*.swp
+tags
+dt_dfm_hr_integration/docs/current
+node_modules/
