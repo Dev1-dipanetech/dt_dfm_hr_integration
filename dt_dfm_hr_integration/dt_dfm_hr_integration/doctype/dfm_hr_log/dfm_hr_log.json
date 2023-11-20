@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-15 12:49:37.769748",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "file_name",
+  "file_path",
+  "column_break_qgi3u",
+  "status",
+  "row_number",
+  "section_break_de89c",
+  "dfm_hr_salary_transaction_summary",
+  "journal_entry",
+  "column_break_bs1hn",
+  "date",
+  "section_break_tdwrn",
+  "error"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_bs1hn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "options": "Journal Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_tdwrn",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_de89c",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "file_name",
+   "fieldtype": "Data",
+   "label": "File Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qgi3u",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "file_path",
+   "fieldtype": "Attach",
+   "label": "File Path",
+   "read_only": 1
+  },
+  {
+   "fieldname": "row_number",
+   "fieldtype": "Data",
+   "label": "Row Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "label": "Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "error",
+   "fieldtype": "Code",
+   "label": "Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Success\nPartial Success\nError",
+   "read_only": 1
+  },
+  {
+   "fieldname": "dfm_hr_salary_transaction_summary",
+   "fieldtype": "Link",
+   "label": "DFM HR Salary Transaction Summary",
+   "options": "DFM HR Salary Transaction Summary",
+   "read_only": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-18 10:14:35.778236",
+ "modified_by": "Administrator",
+ "module": "DT DFM HR Integration",
+ "name": "DFM HR Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager"
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Auditor"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -215,3 +215,13 @@ app_license = "MIT"
 # auth_hooks = [
 #	"dt_dfm_hr_integration.auth.validate"
 # ]
+
+
+
+
+fixtures = [
+	{
+        "dt": "Custom Field", 
+        "filters": [["module", "in", ["DT DFM HR Integration"]]]
+    },
+]

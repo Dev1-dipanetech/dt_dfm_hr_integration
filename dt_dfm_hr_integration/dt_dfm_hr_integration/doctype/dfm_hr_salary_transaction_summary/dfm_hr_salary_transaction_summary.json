@@ -1,0 +1,122 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-11-14 16:34:12.015013",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "department",
+  "column_break_hsi5z",
+  "dfm_hr_grade",
+  "date",
+  "section_break_a5kug",
+  "dfm_hr_salary_transaction_summary_details",
+  "section_break_zewhb",
+  "total_amount",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_hsi5z",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_a5kug",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "DFM HR Salary Transaction Summary",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_zewhb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount"
+  },
+  {
+   "fieldname": "dfm_hr_salary_transaction_summary_details",
+   "fieldtype": "Table",
+   "label": "DFM HR Salary Transaction Summary Details",
+   "options": "DFM HR Salary Transaction Summary Details",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dfm_hr_grade",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "DFM HR Grade",
+   "options": "DFM HR Grade",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "label": "Date",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [
+  {
+   "group": "Journal Entry",
+   "link_doctype": "Journal Entry",
+   "link_fieldname": "dfm_hr_salary_transaction_summary"
+  },
+  {
+   "group": "DFM HR Log",
+   "link_doctype": "DFM HR Log",
+   "link_fieldname": "dfm_hr_salary_transaction_summary"
+  }
+ ],
+ "modified": "2023-11-20 10:17:42.848933",
+ "modified_by": "Administrator",
+ "module": "DT DFM HR Integration",
+ "name": "DFM HR Salary Transaction Summary",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

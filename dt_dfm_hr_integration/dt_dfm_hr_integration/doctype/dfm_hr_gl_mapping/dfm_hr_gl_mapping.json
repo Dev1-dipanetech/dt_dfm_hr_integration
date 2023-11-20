@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{company}-{department}-{dfm_hr_grade}",
+ "creation": "2023-11-13 10:46:14.269618",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "department",
+  "column_break_qigzx",
+  "dfm_hr_grade",
+  "section_break_y8dhq",
+  "dfm_hr_gl_details"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_qigzx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_y8dhq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "allow_bulk_edit": 1,
+   "fieldname": "dfm_hr_gl_details",
+   "fieldtype": "Table",
+   "label": "DFM HR GL Details",
+   "options": "DFM HR GL Details"
+  },
+  {
+   "fieldname": "dfm_hr_grade",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "DFM HR Grade",
+   "options": "DFM HR Grade",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-18 11:17:48.098110",
+ "modified_by": "Administrator",
+ "module": "DT DFM HR Integration",
+ "name": "DFM HR GL Mapping",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
