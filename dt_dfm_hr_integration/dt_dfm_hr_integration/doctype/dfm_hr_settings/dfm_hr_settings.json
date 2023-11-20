@@ -13,7 +13,9 @@
   "sftp_user",
   "sftp_password",
   "template_details_section",
-  "download_template"
+  "download_template",
+  "scheduler_details_section",
+  "timing"
  ],
  "fields": [
   {
@@ -49,12 +51,23 @@
    "fieldname": "download_template",
    "fieldtype": "Button",
    "label": "Download Template"
+  },
+  {
+   "fieldname": "scheduler_details_section",
+   "fieldtype": "Section Break",
+   "label": "Scheduler Details"
+  },
+  {
+   "fieldname": "timing",
+   "fieldtype": "HTML",
+   "label": "Timing",
+   "options": "<div><h5>Everyday 4PM, 5PM, 6PM Scheduler will start.</h5></div>"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-20 10:25:03.582887",
+ "modified": "2023-11-20 14:59:29.996056",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Settings",
