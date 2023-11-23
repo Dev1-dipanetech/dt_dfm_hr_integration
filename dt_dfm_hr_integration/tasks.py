@@ -1,21 +1,13 @@
-
-
-
-
-
-
-
-
-
-
-
-import os
-import frappe
-import time
 from ftplib import FTP
+import frappe
+from frappe.model.document import Document
+import openpyxl
 from io import BytesIO
-from datetime import datetime
-from frappe.utils.data import format_datetime, getdate
+from openpyxl import workbook
+from openpyxl.writer.excel import save_virtual_workbook
+
+
+
 import paramiko
 from io import BytesIO
 import openpyxl
@@ -29,31 +21,59 @@ def all():
 
 
 def cron():
-    print("\n\n\nDFM HR Integration Process Start\n\n\n")
 
-    settings = frappe.get_single("DFM HR Settings")
+    date = frappe.utils.now_datetime()
 
-    server_address = settings.sftp_server_address
-    port = settings.sftp_port
-    user = settings.sftp_user
-    password = settings.sftp_password
+    today_date = date.date().day
 
-    # Establish an SFTP connection
-    transport = paramiko.Transport((server_address, port))
-    transport.connect(username=user, password=password)
-    sftp = paramiko.SFTPClient.from_transport(transport)
+    if (today_date == 1) or (today_date == 2) or (today_date == 3):
 
-    file_list = sftp.listdir()
+        print("\n\n\nDFM HR Integration Process Start\n\n\n")
 
-    xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
+        settings = frappe.get_single("DFM HR Settings")
 
-    for file_name in xlsx_files:
-        try:
-            file_content = []
-            with sftp.file(file_name, 'rb') as remote_file:
-                file_content_io = BytesIO(remote_file.read())
-                workbook = openpyxl.load_workbook(file_content_io)
+        server_address = settings.sftp_server_address
+        port = settings.sftp_port
+        user = settings.sftp_user
+        password = settings.get_password('sftp_password')
+
+        # Establish an SFTP connection
+        transport = paramiko.Transport((server_address, port))
+        transport.connect(username=user, password=password)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+
+        file_list = sftp.listdir()
+
+        xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
+
+        for file_name in xlsx_files:
+            try:
+                file_content = []
+                with sftp.file(file_name, 'rb') as remote_file:
+                    file_content_io = BytesIO(remote_file.read())
+                    workbook = openpyxl.load_workbook(file_content_io)
                 sheet = workbook.active
+
+                
+                
+                
+                file_doc = None
+
+                if not frappe.get_all("File", filters={"file_name": file_name}):
+                    file_content_str = save_virtual_workbook(workbook)
+                    file_doc = frappe.get_doc({
+                        "doctype": "File",
+                        "file_name": file_name,
+                        "content": file_content_str,
+                        "is_private": 1,
+                        "folder": "Home"
+                    })
+                    file_doc.insert(ignore_permissions=True)
+                else:
+                    file_doc = frappe.get_doc("File", {"file_name": file_name})
+
+
+
 
                 header_row = [cell.value for cell in sheet[2]]
                 print("Header Row: {}".format(header_row))
@@ -61,36 +81,39 @@ def cron():
                 for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
                     if not all(cell is None for cell in row):
                         try:
-                            create_salary_register_entry(row, header_row, file_name, row_number)
+                            create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
                         except Exception as e:
-                            log_error(file_name, row_number, str(e))
+                            log_error(file_name, row_number, file_doc, str(e))
 
-        except Exception as e:
-            log_error(file_name, "", str(e))
-            continue
+            except Exception as e:
+                log_error(file_name, "", str(e))
+                continue
 
-    sftp.close()
-    transport.close()
+        sftp.close()
+        transport.close()
 
-    print("\n\n\n\n\nAll files have been downloaded and processed.")
-    frappe.msgprint("Successfully synced data from SFTP.")
-
-
-
-
-
-
+        print("\n\n\n\n\nAll files have been downloaded and processed.")
+        frappe.msgprint("Successfully synced data from SFTP.")
+    
+    else:
+        pass
+    
 
 
 
 
-def create_salary_register_entry(row, header_row, file_name, row_number):
+
+
+
+
+def create_salary_register_entry(row, header_row, file_name, row_number, file_doc):
     try:
         salary_register = frappe.new_doc('DFM HR Salary Transaction Summary')
-        salary_register.department = 'Information Technology - MCS'
+        salary_register.department = row[header_row.index('Department')]
         salary_register.dfm_hr_grade = row[header_row.index('Grade')]
-        salary_register.company = 'Multicolor Steels (India) Pvt Ltd'
+        salary_register.company = row[header_row.index('Companies')]
         salary_register.date = frappe.utils.now_datetime()
+
 
         details_list = []
 
@@ -110,26 +133,27 @@ def create_salary_register_entry(row, header_row, file_name, row_number):
                                                 })
 
                     if gl_mapping:
-                        debit_account = frappe.get_value("DFM HR GL Details",
-                                                   filters={
-                                                       "parent": gl_mapping[0].name,
-                                                       "salary_head": header
-                                                   },
-                                                   fieldname="debit_account")
+                        account = frappe.get_value("DFM HR GL Details",
+                                                filters={
+                                                    "parent": gl_mapping[0].name,
+                                                    "salary_head": header
+                                                },
+                                                fieldname="account")
                         
-                        credit_account = frappe.get_value("DFM HR GL Details",
-                                                   filters={
-                                                       "parent": gl_mapping[0].name,
-                                                       "salary_head": header
-                                                   },
-                                                   fieldname="credit_account")
+                        type = frappe.get_value("DFM HR GL Details",
+                                                filters={
+                                                    "parent": gl_mapping[0].name,
+                                                    "salary_head": header
+                                                },
+                                                fieldname="type")
+                    
 
-                        if debit_account and credit_account:
+                        if account and type:
                             details_list.append({
                                 "salary_head": header,
+                                "account": account,
                                 "amount": amount,
-                                "debit_account": debit_account,
-                                "credit_account": credit_account
+                                "type": type 
                             })
 
         salary_register.set("dfm_hr_salary_transaction_summary_details", details_list)
@@ -141,13 +165,21 @@ def create_salary_register_entry(row, header_row, file_name, row_number):
         salary_register.submit()
 
         # Create Journal Entry
-        create_journal_entry(salary_register, details_list, file_name, row_number)
+        create_journal_entry(salary_register, details_list, file_name, row_number, file_doc)
 
     except Exception as e:
-        log_error(file_name, row_number, str(e))
+        log_error(file_name, row_number, file_doc, str(e))
 
 
-def create_journal_entry(salary_register, details_list, file_name, row_number):
+
+
+
+
+
+
+
+
+def create_journal_entry(salary_register, details_list, file_name, row_number, file_doc):
     try:
         journal_entry = frappe.new_doc("Journal Entry")
         journal_entry.voucher_type = "Journal Entry"
@@ -160,35 +192,44 @@ def create_journal_entry(salary_register, details_list, file_name, row_number):
         total_credit = 0
 
         for entry in details_list:
-            journal_entry.append("accounts", {
-                "account": entry["debit_account"],
-                "debit_in_account_currency": entry["amount"],
-            })
+            amount = entry.get("amount")
+            account = entry.get("account")
+            entry_type = entry.get("type")
 
-            total_debit += entry["amount"]
-        
-        for entry in details_list:
-            journal_entry.append("accounts", {
-                "account": entry["credit_account"],
-                "credit_in_account_currency": entry["amount"],
-            })
+            if entry_type == "Debit":
+                journal_entry.append("accounts", {
+                    "account": account,
+                    "debit_in_account_currency": amount,
+                })
+                total_debit += amount
 
-            total_credit += entry["amount"]
+            elif entry_type == "Credit":
+                journal_entry.append("accounts", {
+                    "account": account,
+                    "credit_in_account_currency": amount,
+                })
+                total_credit += amount
+
+        # Ensure total_credit matches total_debit
+        if total_credit != total_debit:
+            frappe.throw("Total Credit should match Total Debit in the Journal Entry.")
 
         journal_entry.total_debit = total_debit
         journal_entry.total_credit = total_credit
         journal_entry.insert(ignore_permissions=True)
         journal_entry.submit()
 
-        log_success(file_name, row_number, salary_register.name, journal_entry.name)
+        log_success(file_name, row_number, salary_register.name, journal_entry.name, file_doc)
 
     except Exception as e:
-        log_partial_success(file_name, row_number, salary_register, str(e))
+        log_partial_success(file_name, row_number, salary_register, file_doc, str(e))
 
 
-def log_success(file_name, row_number, salary_register, journal_entry):
+
+def log_success(file_name, row_number, salary_register, journal_entry, file_doc):
     log_entry = frappe.new_doc('DFM HR Log')
     log_entry.file_name = file_name
+    log_entry.file_path = file_doc.file_url
     log_entry.row_number = row_number
     log_entry.status = "Success"
     log_entry.dfm_hr_salary_transaction_summary = salary_register
@@ -198,9 +239,10 @@ def log_success(file_name, row_number, salary_register, journal_entry):
     log_entry.insert(ignore_permissions=True)
 
 
-def log_partial_success(file_name, row_number, salary_register, error):
+def log_partial_success(file_name, row_number, salary_register, file_doc, error):
     log_entry = frappe.new_doc('DFM HR Log')
     log_entry.file_name = file_name
+    log_entry.file_path = file_doc.file_url
     log_entry.row_number = row_number
     log_entry.status = "Partial Success"
     log_entry.dfm_hr_salary_transaction_summary = salary_register
@@ -209,12 +251,20 @@ def log_partial_success(file_name, row_number, salary_register, error):
     log_entry.insert(ignore_permissions=True)
 
 
-def log_error(file_name, row_number, error):
+def log_error(file_name, row_number, file_doc, error):
     log_entry = frappe.new_doc('DFM HR Log')
     log_entry.file_name = file_name
+    log_entry.file_path = file_doc.file_url
     log_entry.row_number = row_number
     log_entry.status = "Error"
     log_entry.date = frappe.utils.now_datetime()
     log_entry.error = error
     log_entry.insert(ignore_permissions=True)
+
+
+
+
+
+
+
 

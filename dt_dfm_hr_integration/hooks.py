@@ -152,12 +152,6 @@ app_license = "MIT"
 scheduler_events = {
 
     "cron": {
-        "0 16 * * *": [
-            "dt_dfm_hr_integration.tasks.cron"
-        ],
-        "0 17 * * *": [
-            "dt_dfm_hr_integration.tasks.cron"
-        ],
         "0 18 * * *": [
             "dt_dfm_hr_integration.tasks.cron"
         ]

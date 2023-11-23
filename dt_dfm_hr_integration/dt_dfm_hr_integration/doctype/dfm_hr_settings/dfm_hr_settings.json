@@ -39,7 +39,7 @@
   },
   {
    "fieldname": "sftp_password",
-   "fieldtype": "Data",
+   "fieldtype": "Password",
    "label": "SFTP Password"
   },
   {
@@ -61,13 +61,13 @@
    "fieldname": "timing",
    "fieldtype": "HTML",
    "label": "Timing",
-   "options": "<div><h5>Everyday 4PM, 5PM, 6PM Scheduler will start.</h5></div>"
+   "options": "<div><h5>The Scheduler is set to initiate on the 1st, 2nd, and 3rd day of every month at 6 PM.</h5></div>"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-20 14:59:29.996056",
+ "modified": "2023-11-21 14:51:25.458007",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Settings",
