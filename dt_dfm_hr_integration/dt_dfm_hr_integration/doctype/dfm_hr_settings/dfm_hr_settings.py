@@ -24,86 +24,6 @@ class DFMHRSettings(Document):
 
 
 
-# @frappe.whitelist()
-# def cron():
-#     print("\n\n\nDFM HR Integration Process Start\n\n\n")
-
-#     settings = frappe.get_single("DFM HR Settings")
-
-#     server_address = settings.sftp_server_address
-#     user = settings.sftp_user
-#     password = settings.get_password('sftp_password')
-
-
-#     ftp = FTP(server_address)
-#     ftp.login(user=user, passwd=password)
-#     ftp.set_pasv(False)
-
-#     file_list = ftp.nlst()
-
-#     xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
-
-#     for file_name in xlsx_files:
-#         try:
-#             file_content = []
-#             ftp.retrbinary('RETR ' + file_name, file_content.append)
-#             print("Processing file: {}".format(file_name))
-
-
-#             file_content_io = BytesIO(b''.join(file_content))
-
-#             workbook = openpyxl.load_workbook(file_content_io)
-#             sheet = workbook.active
-
-            
-            
-            
-#             file_doc = None
-
-#             if not frappe.get_all("File", filters={"file_name": file_name}):
-#                 file_content_str = save_virtual_workbook(workbook)
-#                 file_doc = frappe.get_doc({
-#                     "doctype": "File",
-#                     "file_name": file_name,
-#                     "content": file_content_str,
-#                     "is_private": 1,
-#                     "folder": "Home"
-#                 })
-#                 file_doc.insert(ignore_permissions=True)
-#             else:
-#                 file_doc = frappe.get_doc("File", {"file_name": file_name})
-
-
-
-
-#             header_row = [cell.value for cell in sheet[2]]
-#             print("Header Row: {}".format(header_row))
-
-#             for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
-#                 if not all(cell is None for cell in row):
-#                     try:
-#                         create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
-#                     except Exception as e:
-#                         log_error(file_name, row_number, file_doc, str(e))
-
-#         except Exception as e:
-#             log_error(file_name, "", str(e))
-#             continue
-#     ftp.quit()
-#     print("\n\n\n\n\nAll files have been downloaded and processed.")
-#     frappe.msgprint("Successfully synced data from SFTP.")
-
-
-
-
-
-
-
-
-
-
-
-
 @frappe.whitelist()
 def cron():
     print("\n\n\nDFM HR Integration Process Start\n\n\n")
@@ -111,25 +31,28 @@ def cron():
     settings = frappe.get_single("DFM HR Settings")
 
     server_address = settings.sftp_server_address
-    port = settings.sftp_port
     user = settings.sftp_user
     password = settings.get_password('sftp_password')
 
-    # Establish an SFTP connection
-    transport = paramiko.Transport((server_address, port))
-    transport.connect(username=user, password=password)
-    sftp = paramiko.SFTPClient.from_transport(transport)
 
-    file_list = sftp.listdir()
+    ftp = FTP(server_address)
+    ftp.login(user=user, passwd=password)
+    ftp.set_pasv(False)
+
+    file_list = ftp.nlst()
 
     xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
 
     for file_name in xlsx_files:
         try:
             file_content = []
-            with sftp.file(file_name, 'rb') as remote_file:
-                file_content_io = BytesIO(remote_file.read())
-                workbook = openpyxl.load_workbook(file_content_io)
+            ftp.retrbinary('RETR ' + file_name, file_content.append)
+            print("Processing file: {}".format(file_name))
+
+
+            file_content_io = BytesIO(b''.join(file_content))
+
+            workbook = openpyxl.load_workbook(file_content_io)
             sheet = workbook.active
 
             
@@ -166,12 +89,95 @@ def cron():
         except Exception as e:
             log_error(file_name, "", str(e))
             continue
-
-    sftp.close()
-    transport.close()
-
+    ftp.quit()
     print("\n\n\n\n\nAll files have been downloaded and processed.")
     frappe.msgprint("Successfully synced data from SFTP.")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @frappe.whitelist()
+# def cron():
+#     print("\n\n\nDFM HR Integration Process Start\n\n\n")
+
+#     settings = frappe.get_single("DFM HR Settings")
+
+#     server_address = settings.sftp_server_address
+#     port = settings.sftp_port
+#     user = settings.sftp_user
+#     password = settings.get_password('sftp_password')
+
+#     # Establish an SFTP connection
+#     transport = paramiko.Transport((server_address, port))
+#     transport.connect(username=user, password=password)
+#     sftp = paramiko.SFTPClient.from_transport(transport)
+
+#     file_list = sftp.listdir()
+
+#     xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
+
+#     for file_name in xlsx_files:
+#         try:
+#             file_content = []
+#             with sftp.file(file_name, 'rb') as remote_file:
+#                 file_content_io = BytesIO(remote_file.read())
+#                 workbook = openpyxl.load_workbook(file_content_io)
+#             sheet = workbook.active
+
+            
+            
+            
+#             file_doc = None
+
+#             if not frappe.get_all("File", filters={"file_name": file_name}):
+#                 file_content_str = save_virtual_workbook(workbook)
+#                 file_doc = frappe.get_doc({
+#                     "doctype": "File",
+#                     "file_name": file_name,
+#                     "content": file_content_str,
+#                     "is_private": 1,
+#                     "folder": "Home"
+#                 })
+#                 file_doc.insert(ignore_permissions=True)
+#             else:
+#                 file_doc = frappe.get_doc("File", {"file_name": file_name})
+
+
+
+
+#             header_row = [cell.value for cell in sheet[2]]
+#             print("Header Row: {}".format(header_row))
+
+#             for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
+#                 if not all(cell is None for cell in row):
+#                     try:
+#                         create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
+#                     except Exception as e:
+#                         log_error(file_name, row_number, file_doc, str(e))
+
+#         except Exception as e:
+#             log_error(file_name, "", str(e))
+#             continue
+
+#     sftp.close()
+#     transport.close()
+
+#     print("\n\n\n\n\nAll files have been downloaded and processed.")
+#     frappe.msgprint("Successfully synced data from SFTP.")
+
+
+
 
 
 
