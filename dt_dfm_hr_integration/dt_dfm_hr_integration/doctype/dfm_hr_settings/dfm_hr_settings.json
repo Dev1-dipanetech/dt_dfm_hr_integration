@@ -9,6 +9,7 @@
  "field_order": [
   "sftp_setup_section",
   "sftp_server_address",
+  "sftp_port",
   "column_break_zoyz4",
   "sftp_user",
   "sftp_password",
@@ -62,12 +63,17 @@
    "fieldtype": "HTML",
    "label": "Timing",
    "options": "<div><h5>The Scheduler is set to initiate on the 1st, 2nd, and 3rd day of every month at 6 PM.</h5></div>"
+  },
+  {
+   "fieldname": "sftp_port",
+   "fieldtype": "Data",
+   "label": "SFTP Port"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-21 14:51:25.458007",
+ "modified": "2023-11-24 12:08:48.983959",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Settings",
