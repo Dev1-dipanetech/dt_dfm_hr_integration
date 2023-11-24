@@ -33,9 +33,10 @@ def cron():
     server_address = settings.sftp_server_address
     user = settings.sftp_user
     password = settings.get_password('sftp_password')
+    port = 2323  # Replace with your desired port
 
-
-    ftp = FTP(server_address)
+    ftp = FTP()
+    ftp.connect(server_address, port)
     ftp.login(user=user, passwd=password)
     ftp.set_pasv(False)
 

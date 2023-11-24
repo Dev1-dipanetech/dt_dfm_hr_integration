@@ -80,7 +80,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Masters",
-   "link_count": 4,
+   "link_count": 5,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -107,6 +107,16 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Department",
+   "link_count": 0,
+   "link_to": "Department",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "DFM HR GL Mapping",
    "link_count": 0,
    "link_to": "DFM HR GL Mapping",
@@ -125,7 +135,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-11-20 14:38:44.817257",
+ "modified": "2023-11-24 10:49:23.893090",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR",
