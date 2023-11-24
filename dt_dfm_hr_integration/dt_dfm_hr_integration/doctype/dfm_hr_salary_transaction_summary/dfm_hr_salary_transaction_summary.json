@@ -15,7 +15,9 @@
   "section_break_a5kug",
   "dfm_hr_salary_transaction_summary_details",
   "section_break_zewhb",
-  "total_amount",
+  "total_debit",
+  "column_break_sax8m",
+  "total_credit",
   "amended_from"
  ],
  "fields": [
@@ -57,11 +59,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "total_amount",
-   "fieldtype": "Currency",
-   "label": "Total Amount"
-  },
-  {
    "fieldname": "dfm_hr_salary_transaction_summary_details",
    "fieldtype": "Table",
    "label": "DFM HR Salary Transaction Summary Details",
@@ -81,6 +78,20 @@
    "fieldtype": "Datetime",
    "label": "Date",
    "reqd": 1
+  },
+  {
+   "fieldname": "total_debit",
+   "fieldtype": "Currency",
+   "label": "Total Debit"
+  },
+  {
+   "fieldname": "column_break_sax8m",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_credit",
+   "fieldtype": "Currency",
+   "label": "Total Credit"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -97,7 +108,7 @@
    "link_fieldname": "dfm_hr_salary_transaction_summary"
   }
  ],
- "modified": "2023-11-20 10:17:42.848933",
+ "modified": "2023-11-24 14:16:18.735271",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Salary Transaction Summary",
