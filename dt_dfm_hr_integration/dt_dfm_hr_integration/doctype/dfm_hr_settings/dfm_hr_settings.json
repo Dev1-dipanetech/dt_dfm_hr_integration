@@ -10,6 +10,7 @@
   "sftp_setup_section",
   "sftp_server_address",
   "sftp_port",
+  "sftp_folder",
   "column_break_zoyz4",
   "sftp_user",
   "sftp_password",
@@ -68,12 +69,17 @@
    "fieldname": "sftp_port",
    "fieldtype": "Int",
    "label": "SFTP Port"
+  },
+  {
+   "fieldname": "sftp_folder",
+   "fieldtype": "Data",
+   "label": "SFTP Folder"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-24 12:22:39.735944",
+ "modified": "2023-11-24 14:11:08.436671",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Settings",

@@ -35,12 +35,19 @@ def cron():
     password = settings.get_password('sftp_password')
     port = settings.sftp_port
 
+    folder = settings.sftp_folder
+
     ftp = FTP()
     ftp.connect(server_address, port)
     ftp.login(user=user, passwd=password)
     ftp.set_pasv(False)
 
-    file_list = ftp.nlst()
+    if folder:
+        ftp.cwd(folder)
+        file_list = ftp.nlst()
+    else:
+        file_list = ftp.nlst()
+
 
     xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
 
@@ -193,6 +200,75 @@ def cron():
 
 
 
+# def create_salary_register_entry(row, header_row, file_name, row_number, file_doc):
+#     try:
+#         salary_register = frappe.new_doc('DFM HR Salary Transaction Summary')
+#         salary_register.department = row[header_row.index('Department')]
+#         salary_register.dfm_hr_grade = row[header_row.index('Grade')]
+#         salary_register.company = row[header_row.index('Companies')]
+#         salary_register.date = frappe.utils.now_datetime()
+
+
+#         details_list = []
+
+#         for header in header_row:
+#             amount = row[header_row.index(header)]
+
+#             # Skip appending if the amount is 0 or not a number
+#             if isinstance(amount, (int, float)) and amount != 0:
+                
+#                 if frappe.get_all("DFM HR Salary Head", filters={"salary_head": header}):
+                    
+#                     gl_mapping = frappe.get_all("DFM HR GL Mapping",
+#                                                 filters={
+#                                                     "company": salary_register.company,
+#                                                     "department": salary_register.department,
+#                                                     "dfm_hr_grade": salary_register.dfm_hr_grade
+#                                                 })
+
+#                     if gl_mapping:
+#                         account = frappe.get_value("DFM HR GL Details",
+#                                                 filters={
+#                                                     "parent": gl_mapping[0].name,
+#                                                     "salary_head": header
+#                                                 },
+#                                                 fieldname="account")
+                        
+#                         type = frappe.get_value("DFM HR GL Details",
+#                                                 filters={
+#                                                     "parent": gl_mapping[0].name,
+#                                                     "salary_head": header
+#                                                 },
+#                                                 fieldname="type")
+                    
+
+#                         if account and type:
+#                             details_list.append({
+#                                 "salary_head": header,
+#                                 "account": account,
+#                                 "amount": amount,
+#                                 "type": type 
+#                             })
+
+#         salary_register.set("dfm_hr_salary_transaction_summary_details", details_list)
+
+#         total_amount = sum(entry["amount"] for entry in details_list)
+#         salary_register.total_amount = total_amount
+
+#         salary_register.insert(ignore_permissions=True)
+#         salary_register.submit()
+
+#         # Create Journal Entry
+#         create_journal_entry(salary_register, details_list, file_name, row_number, file_doc)
+
+#     except Exception as e:
+#         log_error(file_name, row_number, file_doc, str(e))
+
+
+
+
+
+
 def create_salary_register_entry(row, header_row, file_name, row_number, file_doc):
     try:
         salary_register = frappe.new_doc('DFM HR Salary Transaction Summary')
@@ -201,17 +277,17 @@ def create_salary_register_entry(row, header_row, file_name, row_number, file_do
         salary_register.company = row[header_row.index('Companies')]
         salary_register.date = frappe.utils.now_datetime()
 
-
         details_list = []
+
+        debit_amount = 0
+        credit_amount = 0
 
         for header in header_row:
             amount = row[header_row.index(header)]
 
             # Skip appending if the amount is 0 or not a number
             if isinstance(amount, (int, float)) and amount != 0:
-                
                 if frappe.get_all("DFM HR Salary Head", filters={"salary_head": header}):
-                    
                     gl_mapping = frappe.get_all("DFM HR GL Mapping",
                                                 filters={
                                                     "company": salary_register.company,
@@ -234,7 +310,6 @@ def create_salary_register_entry(row, header_row, file_name, row_number, file_do
                                                 },
                                                 fieldname="type")
                     
-
                         if account and type:
                             details_list.append({
                                 "salary_head": header,
@@ -243,10 +318,16 @@ def create_salary_register_entry(row, header_row, file_name, row_number, file_do
                                 "type": type 
                             })
 
+                            # Update debit_amount or credit_amount based on the type
+                            if type == "Debit":
+                                debit_amount += amount
+                            elif type == "Credit":
+                                credit_amount += amount
+
         salary_register.set("dfm_hr_salary_transaction_summary_details", details_list)
 
-        total_amount = sum(entry["amount"] for entry in details_list)
-        salary_register.total_amount = total_amount
+        salary_register.debit_amount = debit_amount
+        salary_register.credit_amount = credit_amount
 
         salary_register.insert(ignore_permissions=True)
         salary_register.submit()
@@ -256,6 +337,7 @@ def create_salary_register_entry(row, header_row, file_name, row_number, file_do
 
     except Exception as e:
         log_error(file_name, row_number, file_doc, str(e))
+
 
 
 
