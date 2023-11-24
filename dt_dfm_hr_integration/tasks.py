@@ -134,7 +134,14 @@ def cron():
 
         xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
 
+        existing_file_names = frappe.get_all("DFM HR Log", filters={}, fields=["file_name"])
+        existing_file_names = [file["file_name"] for file in existing_file_names]
+
         for file_name in xlsx_files:
+            if file_name in existing_file_names:
+                print("File name {} already exists in DFM HR Log. Skipping file...".format(file_name))
+                continue
+            
             try:
                 file_content = []
                 ftp.retrbinary('RETR ' + file_name, file_content.append)
