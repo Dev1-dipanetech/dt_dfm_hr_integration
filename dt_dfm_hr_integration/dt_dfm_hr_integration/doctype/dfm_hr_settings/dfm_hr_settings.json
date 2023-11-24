@@ -66,14 +66,14 @@
   },
   {
    "fieldname": "sftp_port",
-   "fieldtype": "Data",
+   "fieldtype": "Int",
    "label": "SFTP Port"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-11-24 12:08:48.983959",
+ "modified": "2023-11-24 12:22:39.735944",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Settings",
