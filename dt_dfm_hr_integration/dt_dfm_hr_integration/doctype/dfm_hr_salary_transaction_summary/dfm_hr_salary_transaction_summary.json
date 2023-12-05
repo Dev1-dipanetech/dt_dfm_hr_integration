@@ -34,8 +34,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Department",
-   "options": "Department",
-   "reqd": 1
+   "options": "Department"
   },
   {
    "fieldname": "column_break_hsi5z",
@@ -62,16 +61,14 @@
    "fieldname": "dfm_hr_salary_transaction_summary_details",
    "fieldtype": "Table",
    "label": "DFM HR Salary Transaction Summary Details",
-   "options": "DFM HR Salary Transaction Summary Details",
-   "reqd": 1
+   "options": "DFM HR Salary Transaction Summary Details"
   },
   {
    "fieldname": "dfm_hr_grade",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "DFM HR Grade",
-   "options": "DFM HR Grade",
-   "reqd": 1
+   "options": "DFM HR Grade"
   },
   {
    "fieldname": "date",
@@ -108,7 +105,7 @@
    "link_fieldname": "dfm_hr_salary_transaction_summary"
   }
  ],
- "modified": "2023-11-24 14:16:18.735271",
+ "modified": "2023-12-03 20:18:56.882704",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Salary Transaction Summary",

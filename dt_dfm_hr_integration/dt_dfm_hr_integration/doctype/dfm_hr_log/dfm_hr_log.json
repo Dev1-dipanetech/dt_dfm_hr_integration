@@ -58,7 +58,7 @@
   },
   {
    "fieldname": "row_number",
-   "fieldtype": "Data",
+   "fieldtype": "Long Text",
    "label": "Row Number",
    "read_only": 1
   },
@@ -92,7 +92,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-18 10:14:35.778236",
+ "modified": "2023-12-05 15:21:48.265622",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Log",
@@ -121,6 +121,17 @@
    "read": 1,
    "report": 1,
    "role": "Auditor"
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
+   "set_user_permissions": 1,
+   "share": 1
   }
  ],
  "sort_field": "modified",

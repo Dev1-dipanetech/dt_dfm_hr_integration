@@ -94,15 +94,33 @@ def cron():
             header_row = [cell.value for cell in sheet[2]]
             print("Header Row: {}".format(header_row))
 
+            # for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
+            #     if not all(cell is None for cell in row):
+            #         try:
+            #             create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
+            #         except Exception as e:
+            #             log_error(file_name, row_number, file_doc, str(e))
+
+
+            grouped_rows = {}
             for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
                 if not all(cell is None for cell in row):
-                    try:
-                        create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
-                    except Exception as e:
-                        log_error(file_name, row_number, file_doc, str(e))
+                    companies_value = row[header_row.index('Companies')]
+                    if companies_value not in grouped_rows:
+                        grouped_rows[companies_value] = []
+                    grouped_rows[companies_value].append((row_number, row))
+
+            # Print the grouped rows
+            for companies_value, rows in grouped_rows.items():
+                create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc)
+                # print(f"Rows with Companies value '{companies_value}':")
+                # print(rows)
+
+                # for row_number, row in rows:
+                #     print(f"  Row {row_number}: {row}")
 
         except Exception as e:
-            log_error(file_name, "", str(e))
+            log_error(file_name, "", "", str(e))
             continue
     ftp.quit()
     print("\n\n\n\n\nAll files have been downloaded and processed.")
@@ -119,93 +137,17 @@ def cron():
 
 
 
-
-
-
-# @frappe.whitelist()
-# def cron():
-#     print("\n\n\nDFM HR Integration Process Start\n\n\n")
-
-#     settings = frappe.get_single("DFM HR Settings")
-
-#     server_address = settings.sftp_server_address
-#     port = settings.sftp_port
-#     user = settings.sftp_user
-#     password = settings.get_password('sftp_password')
-
-#     # Establish an SFTP connection
-#     transport = paramiko.Transport((server_address, port))
-#     transport.connect(username=user, password=password)
-#     sftp = paramiko.SFTPClient.from_transport(transport)
-
-#     file_list = sftp.listdir()
-
-#     xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
-
-#     for file_name in xlsx_files:
-#         try:
-#             file_content = []
-#             with sftp.file(file_name, 'rb') as remote_file:
-#                 file_content_io = BytesIO(remote_file.read())
-#                 workbook = openpyxl.load_workbook(file_content_io)
-#             sheet = workbook.active
-
-            
-            
-            
-#             file_doc = None
-
-#             if not frappe.get_all("File", filters={"file_name": file_name}):
-#                 file_content_str = save_virtual_workbook(workbook)
-#                 file_doc = frappe.get_doc({
-#                     "doctype": "File",
-#                     "file_name": file_name,
-#                     "content": file_content_str,
-#                     "is_private": 1,
-#                     "folder": "Home"
-#                 })
-#                 file_doc.insert(ignore_permissions=True)
-#             else:
-#                 file_doc = frappe.get_doc("File", {"file_name": file_name})
-
-
-
-
-#             header_row = [cell.value for cell in sheet[2]]
-#             print("Header Row: {}".format(header_row))
-
-#             for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
-#                 if not all(cell is None for cell in row):
-#                     try:
-#                         create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
-#                     except Exception as e:
-#                         log_error(file_name, row_number, file_doc, str(e))
-
-#         except Exception as e:
-#             log_error(file_name, "", str(e))
-#             continue
-
-#     sftp.close()
-#     transport.close()
-
-#     print("\n\n\n\n\nAll files have been downloaded and processed.")
-#     frappe.msgprint("Successfully synced data from SFTP.")
-
-
-
-
-
-
-
-
-
-
-def create_salary_register_entry(row, header_row, file_name, row_number, file_doc):
+def create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc):
     try:
         salary_register = frappe.new_doc('DFM HR Salary Transaction Summary')
-        salary_register.department = row[header_row.index('Department')]
-        salary_register.dfm_hr_grade = row[header_row.index('Grade')]
-        salary_register.company = row[header_row.index('Companies')]
+
+        company = frappe.get_value("DFM HR Company", 
+                                          filters= {
+                                              "branch" : companies_value
+                                          },
+                                          fieldname = "company")
+        
+        salary_register.company = company
         salary_register.date = frappe.utils.now_datetime()
 
         details_list = []
@@ -213,47 +155,56 @@ def create_salary_register_entry(row, header_row, file_name, row_number, file_do
         debit_amount = 0
         credit_amount = 0
 
-        for header in header_row:
-            amount = row[header_row.index(header)]
+        for row_number, row in rows:
 
-            # Skip appending if the amount is 0 or not a number
-            if isinstance(amount, (int, float)) and amount != 0:
-                if frappe.get_all("DFM HR Salary Head", filters={"salary_head": header}):
-                    gl_mapping = frappe.get_all("DFM HR GL Mapping",
-                                                filters={
-                                                    "company": salary_register.company,
-                                                    "department": salary_register.department,
-                                                    "dfm_hr_grade": salary_register.dfm_hr_grade
-                                                })
+            department = row[header_row.index('Department')]
+            dfm_hr_grade = row[header_row.index('Grade')]
+            
 
-                    if gl_mapping:
-                        account = frappe.get_value("DFM HR GL Details",
-                                                filters={
-                                                    "parent": gl_mapping[0].name,
-                                                    "salary_head": header
-                                                },
-                                                fieldname="account")
+            for header in header_row:
+                amount = row[header_row.index(header)]
+
+                # Skip appending if the amount is 0 or not a number
+                if isinstance(amount, (int, float)) and amount != 0:
+                    if frappe.get_all("DFM HR Salary Head", filters={"salary_head": header}):
+                        gl_mapping = frappe.get_all("DFM HR GL Mapping",
+                                                    filters={
+                                                        "company": company,
+                                                        "department": department,
+                                                        "dfm_hr_grade": dfm_hr_grade
+                                                    })
+
+                        if gl_mapping:
+                            account = frappe.get_value("DFM HR GL Details",
+                                                    filters={
+                                                        "parent": gl_mapping[0].name,
+                                                        "salary_head": header
+                                                    },
+                                                    fieldname="account")
+                            
+                            type = frappe.get_value("DFM HR GL Details",
+                                                    filters={
+                                                        "parent": gl_mapping[0].name,
+                                                        "salary_head": header
+                                                    },
+                                                    fieldname="type")
                         
-                        type = frappe.get_value("DFM HR GL Details",
-                                                filters={
-                                                    "parent": gl_mapping[0].name,
-                                                    "salary_head": header
-                                                },
-                                                fieldname="type")
-                    
-                        if account and type:
-                            details_list.append({
-                                "salary_head": header,
-                                "account": account,
-                                "amount": amount,
-                                "type": type 
-                            })
+                            if account and type:
+                                details_list.append({
+                                    "company": company,
+                                    "dfm_hr_grade": dfm_hr_grade,
+                                    "department": department,
+                                    "salary_head": header,
+                                    "account": account,
+                                    "amount": amount,
+                                    "type": type 
+                                })
 
-                            # Update debit_amount or credit_amount based on the type
-                            if type == "Debit":
-                                debit_amount += amount
-                            elif type == "Credit":
-                                credit_amount += amount
+                                # Update debit_amount or credit_amount based on the type
+                                if type == "Debit":
+                                    debit_amount += amount
+                                elif type == "Credit":
+                                    credit_amount += amount
 
         salary_register.set("dfm_hr_salary_transaction_summary_details", details_list)
 
@@ -264,10 +215,10 @@ def create_salary_register_entry(row, header_row, file_name, row_number, file_do
         salary_register.submit()
 
         # Create Journal Entry
-        create_journal_entry(salary_register, details_list, file_name, row_number, file_doc)
+        create_journal_entry(salary_register, details_list, file_name, rows, file_doc)
 
     except Exception as e:
-        log_error(file_name, row_number, file_doc, str(e))
+        log_error(file_name, rows, file_doc, str(e))
 
 
 
@@ -279,7 +230,106 @@ def create_salary_register_entry(row, header_row, file_name, row_number, file_do
 
 
 
-def create_journal_entry(salary_register, details_list, file_name, row_number, file_doc):
+
+
+
+
+
+
+
+
+# def create_salary_register_entry(row, header_row, file_name, row_number, file_doc):
+#     try:
+#         salary_register = frappe.new_doc('DFM HR Salary Transaction Summary')
+#         department = row[header_row.index('Department')]
+#         dfm_hr_grade = row[header_row.index('Grade')]
+
+#         branch = row[header_row.index('Companies')]
+
+#         company_branch = frappe.get_value("DFM HR Company", 
+#                                           filters= {
+#                                               "branch" : branch
+#                                           },
+#                                           fieldname = "company")
+        
+#         salary_register.company = company_branch
+#         salary_register.date = frappe.utils.now_datetime()
+
+#         details_list = []
+
+#         debit_amount = 0
+#         credit_amount = 0
+
+#         for header in header_row:
+#             amount = row[header_row.index(header)]
+
+#             # Skip appending if the amount is 0 or not a number
+#             if isinstance(amount, (int, float)) and amount != 0:
+#                 if frappe.get_all("DFM HR Salary Head", filters={"salary_head": header}):
+#                     gl_mapping = frappe.get_all("DFM HR GL Mapping",
+#                                                 filters={
+#                                                     "company": company_branch,
+#                                                     "department": department,
+#                                                     "dfm_hr_grade": dfm_hr_grade
+#                                                 })
+
+#                     if gl_mapping:
+#                         account = frappe.get_value("DFM HR GL Details",
+#                                                 filters={
+#                                                     "parent": gl_mapping[0].name,
+#                                                     "salary_head": header
+#                                                 },
+#                                                 fieldname="account")
+                        
+#                         type = frappe.get_value("DFM HR GL Details",
+#                                                 filters={
+#                                                     "parent": gl_mapping[0].name,
+#                                                     "salary_head": header
+#                                                 },
+#                                                 fieldname="type")
+                    
+#                         if account and type:
+#                             details_list.append({
+#                                 "company": company_branch,
+#                                 "dfm_hr_grade": dfm_hr_grade,
+#                                 "department": department,
+#                                 "salary_head": header,
+#                                 "account": account,
+#                                 "amount": amount,
+#                                 "type": type 
+#                             })
+
+#                             # Update debit_amount or credit_amount based on the type
+#                             if type == "Debit":
+#                                 debit_amount += amount
+#                             elif type == "Credit":
+#                                 credit_amount += amount
+
+#         salary_register.set("dfm_hr_salary_transaction_summary_details", details_list)
+
+#         salary_register.total_debit = debit_amount
+#         salary_register.total_credit = credit_amount
+
+#         salary_register.insert(ignore_permissions=True)
+#         salary_register.submit()
+
+#         # Create Journal Entry
+#         create_journal_entry(salary_register, details_list, file_name, row_number, file_doc)
+
+#     except Exception as e:
+#         log_error(file_name, row_number, file_doc, str(e))
+
+
+
+
+
+
+
+
+
+
+
+def create_journal_entry(salary_register, details_list, file_name, rows, file_doc):
     try:
         journal_entry = frappe.new_doc("Journal Entry")
         journal_entry.voucher_type = "Journal Entry"
@@ -319,18 +369,21 @@ def create_journal_entry(salary_register, details_list, file_name, row_number, f
         journal_entry.insert(ignore_permissions=True)
         journal_entry.submit()
 
-        log_success(file_name, row_number, salary_register.name, journal_entry.name, file_doc)
+        log_success(file_name, rows, salary_register.name, journal_entry.name, file_doc)
 
     except Exception as e:
-        log_partial_success(file_name, row_number, salary_register, file_doc, str(e))
+        log_partial_success(file_name, rows, salary_register, file_doc, str(e))
 
 
 
-def log_success(file_name, row_number, salary_register, journal_entry, file_doc):
+def log_success(file_name, rows, salary_register, journal_entry, file_doc):
     log_entry = frappe.new_doc('DFM HR Log')
     log_entry.file_name = file_name
     log_entry.file_path = file_doc.file_url
-    log_entry.row_number = row_number
+
+    row_numbers = [row_number for row_number, _ in rows]
+    log_entry.row_number = ', '.join(map(str, row_numbers))
+
     log_entry.status = "Success"
     log_entry.dfm_hr_salary_transaction_summary = salary_register
     log_entry.journal_entry = journal_entry
@@ -339,11 +392,14 @@ def log_success(file_name, row_number, salary_register, journal_entry, file_doc)
     log_entry.insert(ignore_permissions=True)
 
 
-def log_partial_success(file_name, row_number, salary_register, file_doc, error):
+def log_partial_success(file_name, rows, salary_register, file_doc, error):
     log_entry = frappe.new_doc('DFM HR Log')
     log_entry.file_name = file_name
     log_entry.file_path = file_doc.file_url
-    log_entry.row_number = row_number
+
+    row_numbers = [row_number for row_number, _ in rows]
+    log_entry.row_number = ', '.join(map(str, row_numbers))
+
     log_entry.status = "Partial Success"
     log_entry.dfm_hr_salary_transaction_summary = salary_register
     log_entry.date = frappe.utils.now_datetime()
@@ -351,11 +407,18 @@ def log_partial_success(file_name, row_number, salary_register, file_doc, error)
     log_entry.insert(ignore_permissions=True)
 
 
-def log_error(file_name, row_number, file_doc, error):
+
+def log_error(file_name, rows, file_doc, error):
     log_entry = frappe.new_doc('DFM HR Log')
     log_entry.file_name = file_name
-    log_entry.file_path = file_doc.file_url
-    log_entry.row_number = row_number
+
+    if file_doc:
+        log_entry.file_path = file_doc.file_url
+    
+    if rows:
+        row_numbers = [row_number for row_number, _ in rows]
+        log_entry.row_number = ', '.join(map(str, row_numbers))
+
     log_entry.status = "Error"
     log_entry.date = frappe.utils.now_datetime()
     log_entry.error = error
