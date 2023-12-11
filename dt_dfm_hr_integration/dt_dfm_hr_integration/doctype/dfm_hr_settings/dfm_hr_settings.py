@@ -6,7 +6,7 @@ import frappe
 from frappe.model.document import Document
 import openpyxl
 from io import BytesIO
-from openpyxl import workbook
+from openpyxl import load_workbook, workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 
@@ -14,10 +14,128 @@ import paramiko
 from io import BytesIO
 import openpyxl
 import frappe
+import pysftp
 
 
 class DFMHRSettings(Document):
 	pass
+
+
+
+
+
+
+# @frappe.whitelist()
+# def cron():
+#     print("\n\n\nDFM HR Integration Process Start\n\n\n")
+
+#     settings = frappe.get_single("DFM HR Settings")
+
+#     server_address = settings.sftp_server_address
+#     user = settings.sftp_user
+#     password = settings.get_password('sftp_password')
+#     port = settings.sftp_port
+
+#     folder = settings.sftp_folder
+
+#     ftp = FTP()
+#     ftp.connect(server_address, port)
+#     ftp.login(user=user, passwd=password)
+#     ftp.set_pasv(False)
+
+#     if folder:
+#         ftp.cwd(folder)
+#         file_list = ftp.nlst()
+#     else:
+#         file_list = ftp.nlst()
+
+
+#     xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
+
+#     existing_file_names = frappe.get_all("DFM HR Log", filters={}, fields=["file_name"])
+#     existing_file_names = [file["file_name"] for file in existing_file_names]
+
+#     for file_name in xlsx_files:
+#         if file_name in existing_file_names:
+#             print("File name {} already exists in DFM HR Log. Skipping file...".format(file_name))
+#             continue
+
+#         try:
+#             file_content = []
+#             ftp.retrbinary('RETR ' + file_name, file_content.append)
+#             print("Processing file: {}".format(file_name))
+
+
+#             file_content_io = BytesIO(b''.join(file_content))
+
+#             workbook = openpyxl.load_workbook(file_content_io)
+#             sheet = workbook.active
+
+            
+            
+            
+#             file_doc = None
+
+#             if not frappe.get_all("File", filters={"file_name": file_name}):
+#                 file_content_str = save_virtual_workbook(workbook)
+#                 file_doc = frappe.get_doc({
+#                     "doctype": "File",
+#                     "file_name": file_name,
+#                     "content": file_content_str,
+#                     "is_private": 1,
+#                     "folder": "Home"
+#                 })
+#                 file_doc.insert(ignore_permissions=True)
+#             else:
+#                 file_doc = frappe.get_doc("File", {"file_name": file_name})
+
+
+
+
+#             header_row = [cell.value for cell in sheet[2]]
+#             print("Header Row: {}".format(header_row))
+
+#             # for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
+#             #     if not all(cell is None for cell in row):
+#             #         try:
+#             #             create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
+#             #         except Exception as e:
+#             #             log_error(file_name, row_number, file_doc, str(e))
+
+
+#             grouped_rows = {}
+#             for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
+#                 if not all(cell is None for cell in row):
+#                     companies_value = row[header_row.index('Companies')]
+#                     if companies_value not in grouped_rows:
+#                         grouped_rows[companies_value] = []
+#                     grouped_rows[companies_value].append((row_number, row))
+
+#             # Print the grouped rows
+#             for companies_value, rows in grouped_rows.items():
+#                 create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc)
+#                 # print(f"Rows with Companies value '{companies_value}':")
+#                 # print(rows)
+
+#                 # for row_number, row in rows:
+#                 #     print(f"  Row {row_number}: {row}")
+
+#         except Exception as e:
+#             log_error(file_name, "", "", str(e))
+#             continue
+#     ftp.quit()
+#     print("\n\n\n\n\nAll files have been downloaded and processed.")
+#     frappe.msgprint("Successfully synced data from SFTP.")
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -37,94 +155,91 @@ def cron():
 
     folder = settings.sftp_folder
 
-    ftp = FTP()
-    ftp.connect(server_address, port)
-    ftp.login(user=user, passwd=password)
-    ftp.set_pasv(False)
+    # Establish an SFTP connection
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None  # Disable host key checking (use with caution)
+    with pysftp.Connection(server_address, port=port, username=user, password=password, cnopts=cnopts) as sftp:
+        sftp.chdir(folder)
 
-    if folder:
-        ftp.cwd(folder)
-        file_list = ftp.nlst()
-    else:
-        file_list = ftp.nlst()
+        # List all files in the SFTP server directory
+        file_list = sftp.listdir()
 
+        xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
 
-    xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
+        existing_file_names = frappe.get_all("DFM HR Log", filters={}, fields=["file_name"])
+        existing_file_names = [file["file_name"] for file in existing_file_names]
 
-    existing_file_names = frappe.get_all("DFM HR Log", filters={}, fields=["file_name"])
-    existing_file_names = [file["file_name"] for file in existing_file_names]
+        for file_name in xlsx_files:
+            if file_name in existing_file_names:
+                print("File name {} already exists in DFM HR Log. Skipping file...".format(file_name))
+                continue
 
-    for file_name in xlsx_files:
-        if file_name in existing_file_names:
-            print("File name {} already exists in DFM HR Log. Skipping file...".format(file_name))
-            continue
+            try:
+                # Read the file content from the SFTP server
+                file_content = sftp.getfo(file_name)
 
-        try:
-            file_content = []
-            ftp.retrbinary('RETR ' + file_name, file_content.append)
-            print("Processing file: {}".format(file_name))
+                print("Processing file: {}".format(file_name))
 
+                file_content_io = BytesIO(file_content.read())
 
-            file_content_io = BytesIO(b''.join(file_content))
+                workbook = load_workbook(file_content_io)
+                sheet = workbook.active
 
-            workbook = openpyxl.load_workbook(file_content_io)
-            sheet = workbook.active
+                file_doc = None
 
-            
-            
-            
-            file_doc = None
+                if not frappe.get_all("File", filters={"file_name": file_name}):
+                    file_content_str = save_virtual_workbook(workbook)
+                    file_doc = frappe.get_doc({
+                        "doctype": "File",
+                        "file_name": file_name,
+                        "content": file_content_str,
+                        "is_private": 1,
+                        "folder": "Home"
+                    })
+                    file_doc.insert(ignore_permissions=True)
+                else:
+                    file_doc = frappe.get_doc("File", {"file_name": file_name})
 
-            if not frappe.get_all("File", filters={"file_name": file_name}):
-                file_content_str = save_virtual_workbook(workbook)
-                file_doc = frappe.get_doc({
-                    "doctype": "File",
-                    "file_name": file_name,
-                    "content": file_content_str,
-                    "is_private": 1,
-                    "folder": "Home"
-                })
-                file_doc.insert(ignore_permissions=True)
-            else:
-                file_doc = frappe.get_doc("File", {"file_name": file_name})
+                header_row = [cell.value for cell in sheet[2]]
+                print("Header Row: {}".format(header_row))
 
+                grouped_rows = {}
+                for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
+                    if not all(cell is None for cell in row):
+                        companies_value = row[header_row.index('Companies')]
+                        if companies_value not in grouped_rows:
+                            grouped_rows[companies_value] = []
+                        grouped_rows[companies_value].append((row_number, row))
 
+                # Print the grouped rows
+                for companies_value, rows in grouped_rows.items():
+                    create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc)
+                    # print(f"Rows with Companies value '{companies_value}':")
+                    # print(rows)
 
+                    # for row_number, row in rows:
+                    #     print(f"  Row {row_number}: {row}")
 
-            header_row = [cell.value for cell in sheet[2]]
-            print("Header Row: {}".format(header_row))
+            except Exception as e:
+                log_error(file_name, "", "", str(e))
+                continue
+    sftp.close()
 
-            # for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
-            #     if not all(cell is None for cell in row):
-            #         try:
-            #             create_salary_register_entry(row, header_row, file_name, row_number, file_doc)
-            #         except Exception as e:
-            #             log_error(file_name, row_number, file_doc, str(e))
-
-
-            grouped_rows = {}
-            for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
-                if not all(cell is None for cell in row):
-                    companies_value = row[header_row.index('Companies')]
-                    if companies_value not in grouped_rows:
-                        grouped_rows[companies_value] = []
-                    grouped_rows[companies_value].append((row_number, row))
-
-            # Print the grouped rows
-            for companies_value, rows in grouped_rows.items():
-                create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc)
-                # print(f"Rows with Companies value '{companies_value}':")
-                # print(rows)
-
-                # for row_number, row in rows:
-                #     print(f"  Row {row_number}: {row}")
-
-        except Exception as e:
-            log_error(file_name, "", "", str(e))
-            continue
-    ftp.quit()
     print("\n\n\n\n\nAll files have been downloaded and processed.")
     frappe.msgprint("Successfully synced data from SFTP.")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
