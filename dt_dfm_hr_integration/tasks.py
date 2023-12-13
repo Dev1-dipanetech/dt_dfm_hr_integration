@@ -184,11 +184,10 @@ def cron():
                 try:
                     # Read the file content from the SFTP server
                     file_content = BytesIO()
-                    sftp.getfo(file_name, file_content)
-
+                    sftp.get(file_name, file_content)
                     print("Processing file: {}".format(file_name))
 
-                    file_content_io = BytesIO(file_content.read())
+                    file_content_io = BytesIO(file_content.getvalue())
 
                     workbook = load_workbook(file_content_io)
                     sheet = workbook.active
