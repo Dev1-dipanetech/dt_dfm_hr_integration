@@ -176,7 +176,8 @@ def cron():
 
             try:
                 # Read the file content from the SFTP server
-                file_content = sftp.getfo(file_name)
+                file_content = BytesIO()
+                sftp.getfo(file_name, file_content)
 
                 print("Processing file: {}".format(file_name))
 
