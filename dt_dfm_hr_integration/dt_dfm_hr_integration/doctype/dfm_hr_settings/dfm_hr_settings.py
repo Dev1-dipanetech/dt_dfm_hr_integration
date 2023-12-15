@@ -5,7 +5,7 @@ from ftplib import FTP
 import frappe
 from frappe.model.document import Document
 import openpyxl
-from io import BytesIO
+from io import BytesIO, StringIO
 from openpyxl import load_workbook, workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
@@ -159,10 +159,11 @@ def cron():
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None  # Disable host key checking (use with caution)
     with pysftp.Connection(server_address, port=port, username=user, password=password, cnopts=cnopts) as sftp:
-        sftp.chdir(folder)
-
-        # List all files in the SFTP server directory
-        file_list = sftp.listdir()
+        if folder:
+            sftp.chdir(folder)
+            file_list = sftp.listdir()
+        else:
+            file_list = sftp.listdir()
 
         xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
 
@@ -175,14 +176,18 @@ def cron():
                 continue
 
             try:
-                # Read the file content from the SFTP server
-                file_content = BytesIO()
-                sftp.get(file_name, file_content)
+                file_content = sftp.get(file_name)
+
+                # Check if the content is bytes or string
+                if isinstance(file_content, bytes):
+                    file_content_io = BytesIO(file_content)
+                elif isinstance(file_content, str):
+                    file_content_io = StringIO(file_content)
+                else:
+                    raise ValueError("Unsupported content type")
                 print("Processing file: {}".format(file_name))
 
-                file_content_io = BytesIO(file_content.getvalue())
-
-                workbook = load_workbook(file_content_io)
+                workbook = openpyxl.load_workbook(file_content_io)
                 sheet = workbook.active
 
                 file_doc = None
