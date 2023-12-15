@@ -176,15 +176,12 @@ def cron():
                 continue
 
             try:
-                file_content = sftp.get(file_name)
+                # Retrieve the content as bytes
+                file_content = sftp.get(file_name).read()
 
-                # Check if the content is bytes or string
-                if isinstance(file_content, bytes):
-                    file_content_io = BytesIO(file_content)
-                elif isinstance(file_content, str):
-                    file_content_io = StringIO(file_content)
-                else:
-                    raise ValueError("Unsupported content type")
+                # Use BytesIO for the content
+                file_content_io = BytesIO(file_content)
+
                 print("Processing file: {}".format(file_name))
 
                 workbook = openpyxl.load_workbook(file_content_io)

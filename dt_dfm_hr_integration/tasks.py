@@ -166,10 +166,11 @@ def cron():
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None  # Disable host key checking (use with caution)
         with pysftp.Connection(server_address, port=port, username=user, password=password, cnopts=cnopts) as sftp:
-            sftp.chdir(folder)
-
-            # List all files in the SFTP server directory
-            file_list = sftp.listdir()
+            if folder:
+                sftp.chdir(folder)
+                file_list = sftp.listdir()
+            else:
+                file_list = sftp.listdir()
 
             xlsx_files = [file for file in file_list if file.lower().endswith(".xlsx")]
 
@@ -182,14 +183,15 @@ def cron():
                     continue
 
                 try:
-                    # Read the file content from the SFTP server
-                    file_content = BytesIO()
-                    sftp.get(file_name, file_content)
+                    # Retrieve the content as bytes
+                    file_content = sftp.get(file_name).read()
+
+                    # Use BytesIO for the content
+                    file_content_io = BytesIO(file_content)
+
                     print("Processing file: {}".format(file_name))
 
-                    file_content_io = BytesIO(file_content.getvalue())
-
-                    workbook = load_workbook(file_content_io)
+                    workbook = openpyxl.load_workbook(file_content_io)
                     sheet = workbook.active
 
                     file_doc = None
