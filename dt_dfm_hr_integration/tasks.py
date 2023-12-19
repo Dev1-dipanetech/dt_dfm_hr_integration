@@ -184,7 +184,7 @@ def cron():
 
                 try:
                     # Retrieve the content as bytes
-                    file_content = sftp.get(file_name).read()
+                    file_content = sftp.get(file_name)
 
                     # Use BytesIO for the content
                     file_content_io = BytesIO(file_content)
@@ -232,7 +232,7 @@ def cron():
                 except Exception as e:
                     log_error(file_name, "", "", str(e))
                     continue
-        sftp.close()
+        # sftp.close()
         print("\n\n\n\n\nAll files have been downloaded and processed.")
         frappe.msgprint("Successfully synced data from SFTP.")
 
