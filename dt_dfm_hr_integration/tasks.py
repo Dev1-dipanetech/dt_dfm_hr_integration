@@ -151,7 +151,7 @@ def cron():
 
     if 1 <= today_date <= 3:
         try:
-            frappe.logger.info("DFM HR Integration Process Start")
+            print("DFM HR Integration Process Start")
 
             settings = frappe.get_single("DFM HR Settings")
 
@@ -179,7 +179,7 @@ def cron():
 
                 for file_name in xlsx_files:
                     if file_name in existing_file_names:
-                        frappe.logger.info("File name {} already exists in DFM HR Log. Skipping file...".format(file_name))
+                        print("File name {} already exists in DFM HR Log. Skipping file...".format(file_name))
                         continue
 
                     try:
@@ -189,7 +189,7 @@ def cron():
                         # Use BytesIO for the content
                         file_content_io = BytesIO(file_content)
 
-                        frappe.logger.info("Processing file: {}".format(file_name))
+                        print("Processing file: {}".format(file_name))
 
                         workbook = openpyxl.load_workbook(file_content_io)
                         sheet = workbook.active
@@ -210,7 +210,7 @@ def cron():
                             file_doc = frappe.get_doc("File", {"file_name": file_name})
 
                         header_row = [cell.value for cell in sheet[2]]
-                        frappe.logger.info("Header Row: {}".format(header_row))
+                        print("Header Row: {}".format(header_row))
 
                         grouped_rows = {}
                         for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
@@ -227,7 +227,7 @@ def cron():
                         log_error(file_name, "", "", str(e))
                         continue
 
-            frappe.logger.info("All files have been downloaded and processed.")
+            print("All files have been downloaded and processed.")
             frappe.msgprint("Successfully synced data from SFTP.")
 
         except Exception as e:
