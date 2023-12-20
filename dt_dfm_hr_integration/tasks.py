@@ -184,12 +184,13 @@ def cron():
 
                     try:
                         # Retrieve the content as bytes
-                        file_content = sftp.get(file_name)
+                        with sftp.open(file_name) as f:
+                            file_content = f.read()
+
+                        print("Processing file: {}".format(file_name))
 
                         # Use BytesIO for the content
                         file_content_io = BytesIO(file_content)
-
-                        print("Processing file: {}".format(file_name))
 
                         workbook = openpyxl.load_workbook(file_content_io)
                         sheet = workbook.active
@@ -228,11 +229,11 @@ def cron():
                         continue
 
             print("All files have been downloaded and processed.")
-            frappe.msgprint("Successfully synced data from SFTP.")
+            # frappe.msgprint("Successfully synced data from SFTP.")
 
         except Exception as e:
             log_error("", "", "", str(e))
-            frappe.msgprint("Error occurred during SFTP sync. Check logs for details.")
+            # frappe.msgprint("Error occurred during SFTP sync. Check logs for details.")
 
     else:
         pass
