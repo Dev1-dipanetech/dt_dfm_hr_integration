@@ -467,9 +467,9 @@ def create_journal_entry(salary_register, details_list, file_name, rows, file_do
         journal_entry.total_debit = total_debit
         journal_entry.total_credit = total_credit
         journal_entry.insert(ignore_permissions=True)
-        journal_entry.save()
-        journal_entry.submit()
-        # frappe.db.commit()
+        # journal_entry.save()
+        # journal_entry.submit()
+        # # frappe.db.commit()
 
         log_success(file_name, rows, salary_register.name, journal_entry.name, file_doc)
 
