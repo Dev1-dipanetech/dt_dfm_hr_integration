@@ -438,6 +438,8 @@ def create_journal_entry(salary_register, details_list, file_name, rows, file_do
         journal_entry.user_remark = f"Salary Entry"
         journal_entry.dfm_hr_salary_transaction_summary = salary_register.name
 
+        cost_center = frappe.db.get_value('Company', salary_register.company, 'cost_center')
+
         total_debit = 0
         total_credit = 0
 
@@ -449,6 +451,7 @@ def create_journal_entry(salary_register, details_list, file_name, rows, file_do
             if entry_type == "Debit":
                 journal_entry.append("accounts", {
                     "account": account,
+                    "cost_center": cost_center,
                     "debit_in_account_currency": amount,
                 })
                 total_debit += amount
@@ -456,6 +459,7 @@ def create_journal_entry(salary_register, details_list, file_name, rows, file_do
             elif entry_type == "Credit":
                 journal_entry.append("accounts", {
                     "account": account,
+                    "cost_center": cost_center,
                     "credit_in_account_currency": amount,
                 })
                 total_credit += amount
@@ -467,9 +471,7 @@ def create_journal_entry(salary_register, details_list, file_name, rows, file_do
         journal_entry.total_debit = total_debit
         journal_entry.total_credit = total_credit
         journal_entry.insert(ignore_permissions=True)
-        # journal_entry.save()
-        # journal_entry.submit()
-        # # frappe.db.commit()
+        journal_entry.submit()
 
         log_success(file_name, rows, salary_register.name, journal_entry.name, file_doc)
 
