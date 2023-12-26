@@ -216,7 +216,7 @@ def cron():
                         grouped_rows = {}
                         for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
                             if not all(cell is None for cell in row):
-                                companies_value = row[header_row.index('Companies')]
+                                companies_value = row[header_row.index('Business Unit')]
                                 if companies_value not in grouped_rows:
                                     grouped_rows[companies_value] = []
                                 grouped_rows[companies_value].append((row_number, row))
@@ -263,7 +263,7 @@ def create_salary_register_entry(rows, header_row, companies_value, file_name, f
 
         company = frappe.get_value("DFM HR Company", 
                                           filters= {
-                                              "branch" : companies_value
+                                              "business_unit" : companies_value
                                           },
                                           fieldname = "company")
         

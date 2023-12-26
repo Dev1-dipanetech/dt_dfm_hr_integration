@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{company}-{branch}",
+ "autoname": "format:{company}-{business_unit}",
  "creation": "2023-11-30 15:42:40.011668",
  "default_view": "List",
  "doctype": "DocType",
@@ -10,7 +10,7 @@
  "field_order": [
   "company",
   "column_break_jo7fa",
-  "branch"
+  "business_unit"
  ],
  "fields": [
   {
@@ -19,19 +19,16 @@
    "in_list_view": 1,
    "label": "Company",
    "options": "Company",
-   "reqd": 1,
-   "set_only_once": 1,
-   "unique": 1
+   "reqd": 1
   },
   {
    "fieldname": "column_break_jo7fa",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "branch",
+   "fieldname": "business_unit",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Branch",
+   "label": "Business Unit",
    "reqd": 1,
    "set_only_once": 1,
    "unique": 1
@@ -39,7 +36,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-30 15:45:54.169207",
+ "modified": "2023-12-26 12:13:22.866145",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Company",
