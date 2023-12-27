@@ -63,9 +63,8 @@
   },
   {
    "fieldname": "department",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Department",
-   "options": "Department",
    "reqd": 1
   },
   {
@@ -76,7 +75,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-12-01 17:14:13.041584",
+ "modified": "2023-12-27 11:56:42.125410",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Salary Transaction Summary Details",

@@ -9,9 +9,10 @@
  "engine": "InnoDB",
  "field_order": [
   "company",
-  "department",
+  "department_name",
   "column_break_qigzx",
   "dfm_hr_grade",
+  "department",
   "section_break_y8dhq",
   "dfm_hr_gl_details"
  ],
@@ -25,11 +26,11 @@
    "reqd": 1
   },
   {
+   "fetch_from": "department_name.department_name",
    "fieldname": "department",
-   "fieldtype": "Link",
-   "in_list_view": 1,
+   "fieldtype": "Data",
    "label": "Department",
-   "options": "Department",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -54,14 +55,23 @@
    "label": "DFM HR Grade",
    "options": "DFM HR Grade",
    "reqd": 1
+  },
+  {
+   "fieldname": "department_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Department Name",
+   "options": "Department",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-11-18 11:17:48.098110",
+ "modified": "2023-12-27 11:55:21.357124",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR GL Mapping",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
