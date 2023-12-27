@@ -49,6 +49,7 @@
    "fieldtype": "Section Break"
   },
   {
+   "allow_bulk_edit": 1,
    "fieldname": "dfm_hr_salary_transaction_summary_details",
    "fieldtype": "Table",
    "label": "DFM HR Salary Transaction Summary Details",
@@ -89,7 +90,7 @@
    "link_fieldname": "dfm_hr_salary_transaction_summary"
   }
  ],
- "modified": "2023-12-06 15:55:29.107730",
+ "modified": "2023-12-27 10:55:04.946074",
  "modified_by": "Administrator",
  "module": "DT DFM HR Integration",
  "name": "DFM HR Salary Transaction Summary",
