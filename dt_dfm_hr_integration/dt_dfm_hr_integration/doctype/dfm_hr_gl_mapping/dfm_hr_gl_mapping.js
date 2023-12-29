@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('DFM HR GL Mapping', {
 	refresh: function(frm) {
-		frm.set_query('department', function() {
+		frm.set_query('department_name', function() {
             return {
                 filters: {
 					'company': frm.doc.company
