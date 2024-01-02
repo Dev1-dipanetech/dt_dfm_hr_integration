@@ -106,19 +106,18 @@ class DFMHRSettings(Document):
 #             grouped_rows = {}
 #             for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
 #                 if not all(cell is None for cell in row):
-#                     companies_value = row[header_row.index('Companies')]
-#                     if companies_value not in grouped_rows:
-#                         grouped_rows[companies_value] = []
-#                     grouped_rows[companies_value].append((row_number, row))
+#                     companies_value = row[header_row.index('Business Unit')]
+#                     company = frappe.get_value("DFM HR Company", 
+#                                           filters= {
+#                                               "business_unit" : companies_value
+#                                           },
+#                                           fieldname = "company")
+#                     if company not in grouped_rows:
+#                         grouped_rows[company] = []
+#                     grouped_rows[company].append((row_number, row))
 
-#             # Print the grouped rows
-#             for companies_value, rows in grouped_rows.items():
-#                 create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc)
-#                 # print(f"Rows with Companies value '{companies_value}':")
-#                 # print(rows)
-
-#                 # for row_number, row in rows:
-#                 #     print(f"  Row {row_number}: {row}")
+#             for company, rows in grouped_rows.items():
+#                 create_salary_register_entry(rows, header_row, company, file_name, file_doc)
 
 #         except Exception as e:
 #             log_error(file_name, "", "", str(e))
@@ -209,12 +208,18 @@ def cron():
                 for row_number, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=3):
                     if not all(cell is None for cell in row):
                         companies_value = row[header_row.index('Business Unit')]
-                        if companies_value not in grouped_rows:
-                            grouped_rows[companies_value] = []
-                        grouped_rows[companies_value].append((row_number, row))
+                        company = frappe.get_value("DFM HR Company", 
+                                          filters= {
+                                              "business_unit" : companies_value
+                                          },
+                                          fieldname = "company")
+                        
+                        if company not in grouped_rows:
+                            grouped_rows[company] = []
+                        grouped_rows[company].append((row_number, row))
 
-                for companies_value, rows in grouped_rows.items():
-                    create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc)
+                for company, rows in grouped_rows.items():
+                    create_salary_register_entry(rows, header_row, company, file_name, file_doc)
 
             except Exception as e:
                 log_error(file_name, "", "", str(e))
@@ -237,15 +242,15 @@ def cron():
 
 
 
-def create_salary_register_entry(rows, header_row, companies_value, file_name, file_doc):
+def create_salary_register_entry(rows, header_row, company, file_name, file_doc):
     try:
         salary_register = frappe.new_doc('DFM HR Salary Transaction Summary')
 
-        company = frappe.get_value("DFM HR Company", 
-                                          filters= {
-                                              "business_unit" : companies_value
-                                          },
-                                          fieldname = "company")
+        # company = frappe.get_value("DFM HR Company", 
+        #                                   filters= {
+        #                                       "business_unit" : companies_value
+        #                                   },
+        #                                   fieldname = "company")
         
         salary_register.company = company
         salary_register.date = frappe.utils.now_datetime()
