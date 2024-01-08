@@ -153,13 +153,13 @@ scheduler_events = {
 
     "cron": {
         "0 18 1 * *": [
-            "dt_dfm_hr_integration.tasks.cron"
+            "dt_dfm_hr_integration.hr_scheduled_tasks.cron"
         ],
         "0 18 2 * *": [
-            "dt_dfm_hr_integration.tasks.cron"
+            "dt_dfm_hr_integration.hr_scheduled_tasks.cron"
         ],
         "0 18 3 * *": [
-            "dt_dfm_hr_integration.tasks.cron"
+            "dt_dfm_hr_integration.hr_scheduled_tasks.cron"
         ]
     },
 }
